@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { AbsenceService, AbsenceDTO } from '../services/absence.service';
 import { StudentService } from '../services/student.service';
+import { AbsenceDTO } from '../models/absence.model';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -20,10 +20,9 @@ export class AbsenceComponent implements OnInit {
 
   absences: AbsenceDTO[] = [];
 
-  constructor(
-    private absenceService: AbsenceService,
-    private studentService: StudentService
-  ) {}
+  totalAbsences: number = 0;  
+  totalUnexcusedAbsences: number = 0;
+  constructor(private studentService: StudentService) {}
 
   async ngOnInit(): Promise<void> {
     const userInfo = localStorage.getItem('userInfo');
@@ -36,14 +35,23 @@ export class AbsenceComponent implements OnInit {
 
     try {
       const studentId = await firstValueFrom(this.studentService.getStudentIdByUserId(userId));
-
       if (studentId) {
-        const absences = await firstValueFrom(this.absenceService.getAbsencesByStudentId(studentId));
+        const absences = await firstValueFrom(this.studentService.getStudentAbsences(studentId));
         this.absences = absences.map(absence => ({
           ...absence,
           subject: absence.scheduleSummaryDTO?.subject ?? 'N/A',
           numberOfPeriod: absence.scheduleSummaryDTO?.numberOfPeriod ?? 'N/A'
         }));
+
+        this.totalAbsences = await firstValueFrom(
+          this.studentService.getTotalAbsences(studentId)
+        );
+
+        this.totalUnexcusedAbsences = await firstValueFrom(
+          this.studentService.getTotalUnexcusedAbsences(studentId)
+        );
+
+
       } else {
         console.error('Student ID not found');
       }

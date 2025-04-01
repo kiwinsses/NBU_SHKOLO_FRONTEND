@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Student } from '../models/student.model';
+import { AbsenceDTO } from '../models/absence.model';
+
 
 @Injectable({
   providedIn: 'root',
@@ -83,4 +85,44 @@ export class StudentService {
       headers,
     });
   }
+
+
+  //-----ABSENCE-TAB METHODS-----
+  //fetch all absences by logged student
+  getStudentAbsences(id: number): Observable<AbsenceDTO[]> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + localStorage.getItem('authToken'),
+    });
+  
+    return this.http.get<AbsenceDTO[]>(
+      `http://localhost:8081/absence/fetch/by-student/${id}`,
+      { headers }
+    );
+  }
+
+  //fetch total sum of all absences by student logged in
+  getTotalAbsences(id:number): Observable<number>{
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + localStorage.getItem('authToken'),
+    });
+    return this.http.get<number>(
+      `http://localhost:8081/absence/total/by-student/${id}`,
+    { headers }
+    );
+  }
+
+  getTotalUnexcusedAbsences(id:number): Observable<number>{
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + localStorage.getItem('authToken'),
+    });
+    return this.http.get<number>(
+      `http://localhost:8081/absence/total-unexcused/by-student/${id}`,
+    { headers }
+    );
+  }
+
+
 }
